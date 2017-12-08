@@ -97,3 +97,5 @@ inputs_data = tf.placeholder(tf.int32, shape=[None, fix_length], name="inputs_da
 labels = tf.placeholder(tf.int32, shape=[None], name="labels")
 
 word_embedding = tf.Variable(tf.random_uniform([vocab_size, word_embedding_dim]))
+word_embeds = tf.nn.embedding_lookup(word_embedding, inputs_data)
+embeds_reduced = tf.reduce_sum(word_embeds, axis=1)
