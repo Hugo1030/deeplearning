@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import Counter
@@ -8,15 +9,10 @@ import time
 
 # load file and get data
 def load_data(file):
-    line_no = 0
-    limits = 1000
     with open(file) as f:
         data = []
         labels = []
         for line in f.readlines():
-            line_no += 1
-            if line_no > limits:
-                break
             words = []
             for word in jieba.cut(line.strip().split('\t')[0]):
                 if word>=u'\u4e00' and word<=u'\u9fff':
@@ -33,10 +29,11 @@ train_data,train_labels = load_data(train_file)
 test_data,test_labels = load_data(test_file)
 
 # fixlenth and padding
+padding = ["<Pad>"]
+fix_length = 20
+
 def pad_data(data):
     content = []
-    fix_length = 20
-    padding = ["<Pad>"]
 
     for sentence in data:
         if len(sentence) < fix_length:
@@ -80,4 +77,23 @@ def index_list(content):
     return all_index
 train_inputs = index_list(train_content)
 test_inputs = index_list(test_content)
-print(train_inputs)
+
+# lst to array
+x_train = np.asarray(train_inputs).astype("int32")
+y_train = np.asarray(train_labels).astype("int32")
+
+x_test = np.asarray(test_inputs).astype("int32")
+y_test = np.asarray(test_labels).astype("int32")
+
+print(x_train.shape, x_test.shape, len(vocab))
+
+# reset tensorflow_graph
+tf.reset_default_graph()
+word_embedding_dim = 16
+vocab_size = len(vocab)
+
+# input layer
+inputs_data = tf.placeholder(tf.int32, shape=[None, fix_length], name="inputs_data")
+labels = tf.placeholder(tf.int32, shape=[None], name="labels")
+
+word_embedding = tf.Variable(tf.random_uniform([vocab_size, word_embedding_dim]))
