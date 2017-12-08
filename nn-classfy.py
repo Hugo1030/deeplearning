@@ -111,3 +111,57 @@ final_output = tf.nn.softmax(logits)
 cost = tf.reduce_mean(
     tf.nn.sparse_softmax_cross_entropy_with_logits(
         logits=logits, labels=labels))
+
+# optimizer
+train_step = tf.train.AdamOptimizer(3e-4).minimize(cost)
+
+# evaluate model
+def evaluate_model(sess, inputs_, labels_):
+    pred_prob = sess.run(final_output, feed_dict={inputs_data: inputs_, labels: labels_})
+    preds = np.asarray((pred_prob[:, 1]>0.5), dtype=int)
+    mat = sess.run(tf.confusion_matrix(labels_, preds))
+    tn, fp, fn, tp = mat.reshape(4)
+    Accuracy = (tp + tn) / (tn + tp + fn + fp)
+    return Accuracy,mat
+
+# LM init
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+
+train_dict = {inputs_data: x_train, labels: y_train}
+test_dict = {inputs_data: x_test, labels: y_test}
+
+costs_train = []
+costs_test = []
+
+arr = np.arange(len(x_train))
+batch_size = 50
+
+# train model
+start = time.time()
+try:
+    for i in range(10000):
+        np.random.shuffle(arr)
+        for j in range(batch_size):
+            batch_index = arr[j: j + batch_size]
+            batch_inputs = x_train[batch_index]
+            batch_labels = y_train[batch_index]
+            batch_feed = {inputs_data: batch_inputs, labels: batch_labels}
+            sess.run(train_step, feed_dict=batch_feed)
+
+        if i % 10 == 0:
+            cost_train = sess.run(cost, feed_dict=train_dict)
+            cost_test = sess.run(cost, feed_dict=test_dict)
+            accuracy_train,mat_train = evaluate_model(sess, x_train, y_train)
+            accuracy_test,mat_test = evaluate_model(sess, x_test, y_test)
+            print("Epoch {:03d} cost: train {:.3f} / test {:.3f}".format(
+                i, cost_train, cost_test))
+            print(' Accuracy {:.3f}: train / test {:.3f}'.format(accuracy_train, accuracy_test))
+except KeyboardInterrupt:
+    print("KeyboardInterrupt.")
+finally:
+    accuracy,mat = evaluate_model(sess, x_test, y_test)
+    end = time.time()
+    print("\ntime: {:.2f} s".format(end - start))
+    print(' Confusion matrix:\n', mat)
+
