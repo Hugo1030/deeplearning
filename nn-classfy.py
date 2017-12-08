@@ -95,7 +95,19 @@ vocab_size = len(vocab)
 # input layer
 inputs_data = tf.placeholder(tf.int32, shape=[None, fix_length], name="inputs_data")
 labels = tf.placeholder(tf.int32, shape=[None], name="labels")
-
 word_embedding = tf.Variable(tf.random_uniform([vocab_size, word_embedding_dim]))
+
 word_embeds = tf.nn.embedding_lookup(word_embedding, inputs_data)
 embeds_reduced = tf.reduce_sum(word_embeds, axis=1)
+
+# hidden layer
+hidden = tf.layers.dense(embeds_reduced, word_embedding_dim, activation=tf.tanh)
+
+# output layer
+logits = tf.layers.dense(hidden, 2)
+final_output = tf.nn.softmax(logits)
+
+# loss function
+cost = tf.reduce_mean(
+    tf.nn.sparse_softmax_cross_entropy_with_logits(
+        logits=logits, labels=labels))
