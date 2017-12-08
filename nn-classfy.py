@@ -1,5 +1,6 @@
 import tensorflow as tf
 import pandas as pd
+import matplotlib.pyplot as plt
 from collections import Counter
 import jieba
 import time
@@ -8,7 +9,7 @@ import time
 # load file and get data
 def load_data(file):
     line_no = 0
-    limits = 5
+    limits = 1000
     with open(file) as f:
         data = []
         labels = []
@@ -57,4 +58,26 @@ def word_count(content):
     word_cnt = Counter(all_words)
     return word_cnt
 word_cnt = word_count(train_content)
-print(word_cnt)
+
+# create vocab
+vocab = ["UNK"]
+for word,num in word_cnt.most_common():
+    if num > 3:
+        vocab.append(word)
+
+# create index
+idx_dict = dict(zip(vocab, range(len(vocab))))
+
+# get sentence squency
+def index_list(content):
+    all_index = []
+    for sentence in content:
+        idx_sentence = []
+        for word in sentence:
+            idx = idx_dict[word] if word in idx_dict else 0
+            idx_sentence.append(idx)
+        all_index.append(idx_sentence)
+    return all_index
+train_inputs = index_list(train_content)
+test_inputs = index_list(test_content)
+print(train_inputs)
