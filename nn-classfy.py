@@ -47,6 +47,14 @@ def pad_data(data):
 
 train_content = pad_data(train_data)
 test_content = pad_data(test_data)
-print(train_content, test_content)
 
-
+# statistical word frequency
+def word_count(content):
+    all_words = []
+    for words in content:
+        for word in words:
+            all_words.append(word)
+    word_cnt = Counter(all_words)
+    return word_cnt
+word_cnt = word_count(train_content)
+print(word_cnt)
