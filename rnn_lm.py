@@ -72,3 +72,16 @@ inputs_train = sentences_vector[:, :-1]
 labels_train = sentences_vector[:, 1:]
 
 print(inputs_train.shape, labels_train.shape)
+
+# built RNN model
+tf.reset_default_graph()
+
+cell = tf.contrib.rnn.GRUCell(128)
+word_embedding_dim = 128
+
+word_embedding = tf.Variable(tf.random_uniform([vocab_size, word_embedding_dim]))
+
+inputs = tf.placeholder(tf.int32, shape=[None, None], name='inputs')
+labels = tf.placeholder(tf.int32, shape=[None, None], name='labels')
+
+labels_flat = tf.reshape(labels, (-1,))
