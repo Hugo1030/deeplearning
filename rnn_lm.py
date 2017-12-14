@@ -85,3 +85,8 @@ inputs = tf.placeholder(tf.int32, shape=[None, None], name='inputs')
 labels = tf.placeholder(tf.int32, shape=[None, None], name='labels')
 
 labels_flat = tf.reshape(labels, (-1,))
+
+input_embeds = tf.nn.embedding_lookup(word_embedding, inputs)
+
+sequence_length = tf.reduce_sum(tf.sign(inputs), axis=1)
+max_sequence_length = tf.reduce_max(sequence_length)
